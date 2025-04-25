@@ -113,13 +113,11 @@ def pair(hostip):
         pDialog.create("Pairing", "Launching pairing...")
         while proc and proc.poll() is None and not pDialog.iscanceled():
             try:
-                stdout += proc.stdout.read()
+                stdout += proc.stdout.read().decode()
             except:
                 pass
             if not codeFlag:
-                code = re.search(
-                    r"Please enter the following PIN on the target PC: (\d+)",
-                    stdout)
+                code = re.search(r"Please enter the following PIN on the target PC: (\d+)", stdout)
                 if code:
                     codeFlag = True
                     code = code.groups()[0]
