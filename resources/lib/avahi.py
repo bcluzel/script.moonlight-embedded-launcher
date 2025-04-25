@@ -3,7 +3,7 @@
 """
 Avahi functions to check for gamstream hosts etc
 """
-from utils import subprocess_runner
+from .utils import subprocess_runner
 
 
 def host_check():

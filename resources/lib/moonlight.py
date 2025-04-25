@@ -9,8 +9,8 @@ import sys
 import time
 import xbmc
 import xbmcgui
-from avahi import host_check
-from utils import stop_old_container, subprocess_runner, wait_or_cancel
+from .avahi import host_check
+from .utils import stop_old_container, subprocess_runner, wait_or_cancel
 
 
 def install():
@@ -20,7 +20,7 @@ def install():
     """
     script = os.path.join(os.path.dirname(__file__), "bin",
                           "install_moonlight.sh")
-    cmd = "bash {script}".format(script=script)                      
+    cmd = f"bash {script}"
     proc = subprocess_runner(cmd.split(' '), 'install', wait=False)
     (status,_) = wait_or_cancel(proc, 'Installation',
                          'Running installation...this may take a few minutes')
@@ -54,22 +54,20 @@ def launch(res, fps, bitrate, quitafter, hostip, usercustom):
     # We also make sure to put the game name in quotation marks to ensure it to be treated as one arg
     selectedGame = gameList[gameIdx].split(" ", 1)[1].replace("\n", "")
     xbmc.log(
-        "Streaming {} with moonlight-embedded, Kodi will now exit.".format(
-            selectedGame),
+        f"Streaming {selectedGame} with moonlight-embedded, Kodi will now exit.",
         xbmc.LOGINFO,
     )
     # Send quit command from moonlight after existing (helpful for non-steam sessions):
     quitflag = "-q" if quitafter == "true" else ""
     # Custom host ip (moonlight will auto-detect if not specified)
-    hostipflag = "-i {}".format(hostip) if hostip else "" 
+    hostipflag = f"-i {hostip}" if hostip else ""
     # Custom user settings:
-    customflag = "-c \"{}\"".format(usercustom) if usercustom else ""
+    customflag = f'-c "{usercustom}"' if usercustom else ""
     script = os.path.join(os.path.dirname(__file__), "bin",
                           "launch_moonlight.sh")
-    launchCommand = "systemd-run bash {}".format(script)
+    launchCommand = f"systemd-run bash {script}"
     # pass optional flag arguments first because bash getopts is picky
-    args = '{} {} {} "{}" "{}" "{}" "{}"'.format(hostipflag, quitflag, customflag, res, fps, bitrate, 
-                                               selectedGame).strip()
+    args = f'{hostipflag} {quitflag} {customflag} "{res}" "{fps}" "{bitrate}" "{selectedGame}"'
     os.system(launchCommand + " " + args)
 
 
@@ -127,8 +125,7 @@ def pair(hostip):
                     code = code.groups()[0]
                     pDialog.update(
                         50,
-                        "Please enter authentication code {code} on Gamestream host"
-                        .format(code=code),
+                        f"Please enter authentication code {code} on Gamestream host",
                     )
         if not pDialog.iscanceled() and proc.returncode == 0:
             pDialog.update(100, "Complete!")
@@ -154,7 +151,7 @@ def run_moonlight(mode, hostip, wait=True, blockio=True):
     :param block: allow reading of stdout to block
     :return: subprocess object
     """
-    stop_old_container("moonlight_{mode}".format(mode=mode))
+    stop_old_container(f"moonlight_{mode}")
     if not hostip and not host_check():
         xbmcgui.Dialog().ok(
             "Error",
@@ -164,7 +161,7 @@ def run_moonlight(mode, hostip, wait=True, blockio=True):
     cmd = (
         "docker run --rm -t --name moonlight_{mode}"
         " -v moonlight-home:/home/moonlight-user -v /var/run/dbus:/var/run/dbus"
-        " clarkemw/moonlight-embedded-raspbian {mode} {hostip}").format(mode=mode, hostip=hostip)
+        f" clarkemw/moonlight-embedded-raspbian {mode} {hostip}")
     return subprocess_runner(cmd.rstrip().split(" "), "moonlight " + mode, wait,
                              blockio)
 
@@ -174,7 +171,7 @@ def update_moonlight():
     """
     opt = xbmcgui.Dialog().yesno(
         "Update", "Do you want to update the moonlight-embedded docker container?")
-    if opt:   
+    if opt:
         cmd = "docker pull clarkemw/moonlight-embedded-raspbian"
         proc = subprocess_runner(cmd.split(" "), "docker update", wait=False)
         wait_or_cancel(proc, "Update",

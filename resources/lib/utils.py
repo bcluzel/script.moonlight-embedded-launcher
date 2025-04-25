@@ -22,10 +22,10 @@ def subprocess_runner(cmd, desc, wait=True, blockio=True):
     """
     if wait:
         try:
-            proc = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            proc = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
         except subprocess.CalledProcessError as procError:
             msg = procError.output
-            xbmcgui.Dialog().ok("Error during {desc}".format(desc=desc), msg)
+            xbmcgui.Dialog().ok(f"Error during {desc}", msg)
             return None
     else:
         proc = subprocess.Popen(cmd,
@@ -46,7 +46,7 @@ def stop_old_container(container):
     """
     check = subprocess_runner("docker ps".split(" "), "container check")
     if check and container in check:
-        stop = "docker container stop {container}".format(container=container)
+        stop = f"docker container stop {container}"
         subprocess_runner(stop.split(" "), "stop container")
 
 
@@ -72,8 +72,7 @@ def wait_or_cancel(proc, title, message):
                 pDialog.update(100, "Complete!")
                 time.sleep(3)
             else:
-                xbmcgui.Dialog().ok(
-                    "Error during {desc}".format(desc=title.lower()), msg)
+                xbmcgui.Dialog().ok(f"Error during {title.lower()}", msg)
                 stdout = msg
         else:
             proc.terminate()

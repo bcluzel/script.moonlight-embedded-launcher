@@ -4,22 +4,22 @@ import os
 import sys
 import xbmcaddon
 import xbmcgui
+from resources.lib import moonlight
 
 addon = xbmcaddon.Addon(id="script.moonlight-embedded-launcher")
-sys.path.append(os.path.join(addon.getAddonInfo("path"), "resources", "lib"))
-import moonlight
 
 while True:
     if addon.getSetting("firstrun") == "true":
-        opt = xbmcgui.Dialog().yesno("Installation", 
+        opt = xbmcgui.Dialog().yesno("Installation",
         "First launch detected. Do you want to run the required script to configure moonlight?")
         if opt:
             status = moonlight.install()
             if status:
                 addon.setSetting(id="firstrun", value="false")
-                moonlight.pair()
+                xbmcgui.Dialog().ok("Installation",
+                                    "Done. Configure the client first.")
             else:
-                continue    
+                continue
         else:
             xbmcgui.Dialog().ok("Installation",
                                 "Skipping installation...press OK to exit")
