@@ -159,8 +159,8 @@ def run_moonlight(mode, hostip, wait=True, blockio=True):
         )
         return None
     cmd = (
-        "docker run --rm -t --name moonlight_{mode}"
-        " -v moonlight-home:/home/moonlight-user -v /var/run/dbus:/var/run/dbus"
+        f"docker run --rm -t --name moonlight_{mode}"
+        f" -v moonlight-home:/home/moonlight-user -v /var/run/dbus:/var/run/dbus"
         f" clarkemw/moonlight-embedded-raspbian {mode} {hostip}")
     return subprocess_runner(cmd.rstrip().split(" "), "moonlight " + mode, wait,
                              blockio)
