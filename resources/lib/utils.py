@@ -77,7 +77,6 @@ def wait_or_cancel(proc, title, message):
             if exitcode == 0:
                 stdout = msg
                 pDialog.update(100, "Complete!")
-                time.sleep(3)
             else:
                 xbmcgui.Dialog().ok(f"Error during {title.lower()}", msg)
                 stdout = msg

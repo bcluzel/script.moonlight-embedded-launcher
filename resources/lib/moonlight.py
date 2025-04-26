@@ -44,12 +44,14 @@ def launch(res, fps, bitrate, quitafter, hostip, usercustom):
     """
 
     gameList = load_installed_games(hostip)
-    if gameList == None:
+    if not gameList:
+        xbmcgui.Dialog().ok("No games found.")
         return
     dialog = xbmcgui.Dialog()
     gameIdx = dialog.select("Choose your Game:", gameList)
     if gameIdx == -1:
-        sys.exit()
+        xbmcgui.Dialog().ok("No valid game selected.")
+        return
     # We split at the first blank to get rid of the number in the beginning
     # We also make sure to put the game name in quotation marks to ensure it to be treated as one arg
     selectedGame = gameList[gameIdx].split(" ", 1)[1].replace("\n", "")
@@ -58,17 +60,19 @@ def launch(res, fps, bitrate, quitafter, hostip, usercustom):
         xbmc.LOGINFO,
     )
     # Send quit command from moonlight after existing (helpful for non-steam sessions):
-    quitflag = "-q" if quitafter == "true" else ""
-    # Custom host ip (moonlight will auto-detect if not specified)
-    hostipflag = f"-i {hostip}" if hostip else ""
-    # Custom user settings:
-    customflag = f'-c "{usercustom}"' if usercustom else ""
-    script = os.path.join(os.path.dirname(__file__), "bin",
-                          "launch_moonlight.sh")
-    launchCommand = f"systemd-run bash {script}"
-    # pass optional flag arguments first because bash getopts is picky
-    args = f'{hostipflag} {quitflag} {customflag} "{res}" "{fps}" "{bitrate}" "{selectedGame}"'
-    os.system(launchCommand + " " + args)
+    quitflag = "-quitappafter" if quitafter == "true" else ""
+
+    os.system("systemctl stop kodi") # Must close kodi for proper video display
+
+    # Launch docker, adjusted to just used input variables
+    os.system('docker run --rm --name moonlight -t -v moonlight-home:/home/moonlight-user '
+        '-v /var/run/dbus:/var/run/dbus --device /dev/vchiq --device /dev/input '
+        f'clarkemw/moonlight-embedded-raspbian stream -{res} -fps {fps} -bitrate {bitrate} {quitflag} {usercustom} -app "{selectedGame}" {hostip}')
+
+    os.system("docker wait moonlight")
+
+    os.system("systemctl start kodi")
+
 
 
 def load_installed_games(hostip):
@@ -92,11 +96,7 @@ def load_installed_games(hostip):
             # =========================================
             # A return code=0 signals that we were successful in obtaining the list.
             gamelist = [game for game in result.splitlines() if re.search('^\d+\.',game)]
-            if gamelist:
-                return gamelist
-            else:
-                xbmcgui.Dialog().ok("Error during fetching installed games",
-                                    result)
+            return gamelist
 
 
 def pair(hostip):
