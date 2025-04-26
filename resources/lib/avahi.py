@@ -3,7 +3,7 @@
 """
 Avahi functions to check for gamstream hosts etc
 """
-from .utils import subprocess_runner
+from .utils import subprocess_runner_blocking
 
 
 def host_check():
@@ -12,7 +12,7 @@ def host_check():
 
     :return: boolean for host availability
     """
-    check = subprocess_runner("avahi-browse -t _nvstream._tcp".split(" "), "host check")
+    check = subprocess_runner_blocking("avahi-browse -t _nvstream._tcp".split(" "), "host check")
     if check and "nvstream" in check:
         return True
     else:

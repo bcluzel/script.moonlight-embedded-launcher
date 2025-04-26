@@ -10,31 +10,38 @@ import time
 import xbmcgui
 
 
-def subprocess_runner(cmd, desc, wait=True, blockio=True):
+def subprocess_runner_blocking(cmd, desc):
     """
     execute command in a local subprocess
 
     :param cmd: command to execute in list format
     :param desc: description of command being run (for error messages)
-    :param wait: wait for process to complete
+    :return: subprocess object or None
+    """
+    try:
+        proc = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
+        return proc
+    except subprocess.CalledProcessError as procError:
+        msg = procError.output
+        xbmcgui.Dialog().ok(f"Error during {desc}", msg)
+        return None
+
+def subprocess_runner(cmd, desc, blockio=True):
+    """
+    execute command in a local subprocess
+
+    :param cmd: command to execute in list format
+    :param desc: description of command being run (for error messages)
     :param block: allow reading of stdout to block
     :return: subprocess object or None
     """
-    if wait:
-        try:
-            proc = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
-        except subprocess.CalledProcessError as procError:
-            msg = procError.output
-            xbmcgui.Dialog().ok(f"Error during {desc}", msg)
-            return None
-    else:
-        proc = subprocess.Popen(cmd,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-        if not blockio:
-            fd = proc.stdout.fileno()
-            fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-            fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    proc = subprocess.Popen(cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+    if not blockio:
+        fd = proc.stdout.fileno()
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
     return proc
 
 
@@ -44,7 +51,7 @@ def stop_old_container(container):
 
     :param container: name of docker container to check
     """
-    check = subprocess_runner("docker ps".split(" "), "container check")
+    check = subprocess_runner_blocking("docker ps".split(" "), "container check")
     if check and container in check:
         stop = f"docker container stop {container}"
         subprocess_runner(stop.split(" "), "stop container")
@@ -65,7 +72,7 @@ def wait_or_cancel(proc, title, message):
         pDialog.update(50, message)
     try:
         if not pDialog.iscanceled():
-            msg = proc.communicate()[0]
+            msg = proc.communicate()[0].decode()
             exitcode = proc.returncode
             if exitcode == 0:
                 stdout = msg
@@ -78,7 +85,7 @@ def wait_or_cancel(proc, title, message):
             proc.terminate()
             stdout = None
             exitcode = 1
-    except:
-        pass
+    except Exception:
+        return (-1, "")
     pDialog.close()
     return (exitcode, stdout)

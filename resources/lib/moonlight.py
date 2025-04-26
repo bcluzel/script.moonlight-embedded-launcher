@@ -21,7 +21,7 @@ def install():
     script = os.path.join(os.path.dirname(__file__), "bin",
                           "install_moonlight.sh")
     cmd = f"bash {script}"
-    proc = subprocess_runner(cmd.split(' '), 'install', wait=False)
+    proc = subprocess_runner(cmd.split(' '), 'install')
     (status,_) = wait_or_cancel(proc, 'Installation',
                          'Running installation...this may take a few minutes')
     if status == 0:
@@ -77,7 +77,7 @@ def load_installed_games(hostip):
 
     :return: list of available games
     """
-    proc = run_moonlight("list", hostip, wait=False)
+    proc = run_moonlight("list", hostip)
     if proc:
         (status, result) = wait_or_cancel(proc, "List",
                                           "Getting available games...")
@@ -107,7 +107,7 @@ def pair(hostip):
         "Pairing", "Do you want to pair with a Gamestream host?")
     if opt:
         pDialog = xbmcgui.DialogProgress()
-        proc = run_moonlight("pair", hostip, wait=False, blockio=False)
+        proc = run_moonlight("pair", hostip, blockio=False)
         stdout = ""
         codeFlag = False
         pDialog.create("Pairing", "Launching pairing...")
@@ -140,7 +140,7 @@ def pair(hostip):
                 "Gamestream credentials already exist for this host.")
 
 
-def run_moonlight(mode, hostip, wait=True, blockio=True):
+def run_moonlight(mode, hostip, blockio=True):
     """
     execute moonlight in a local subprocess (won't work for streaming)
 
@@ -160,8 +160,7 @@ def run_moonlight(mode, hostip, wait=True, blockio=True):
         f"docker run --rm -t --name moonlight_{mode}"
         f" -v moonlight-home:/home/moonlight-user -v /var/run/dbus:/var/run/dbus"
         f" clarkemw/moonlight-embedded-raspbian {mode} {hostip}")
-    return subprocess_runner(cmd.rstrip().split(" "), "moonlight " + mode, wait,
-                             blockio)
+    return subprocess_runner(cmd.rstrip().split(" "), "moonlight " + mode, blockio)
 
 def update_moonlight():
     """
@@ -171,6 +170,6 @@ def update_moonlight():
         "Update", "Do you want to update the moonlight-embedded docker container?")
     if opt:
         cmd = "docker pull clarkemw/moonlight-embedded-raspbian"
-        proc = subprocess_runner(cmd.split(" "), "docker update", wait=False)
+        proc = subprocess_runner(cmd.split(" "), "docker update")
         wait_or_cancel(proc, "Update",
                        "Running docker update...this may take a few minutes")
