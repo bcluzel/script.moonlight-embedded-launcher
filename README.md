@@ -1,3 +1,13 @@
+# FORK of script.moonlight-embedded-launcher
+
+Works with python 3 and libelec >= 10.
+
+## Developpement:
+To deploy quickly to test on target:
+```sh
+scp -r * root@<address>:/storage/.kodi/addons/script.moonlight-embedded-launcher
+```
+
 # script.moonlight-embedded-launcher
 Docker container/Kodi launcher for running moonlight-embedded on LibreELEC/Raspberry Pi systems.
 
@@ -30,15 +40,15 @@ Kodi/Add-ons/Install from zip file/Select script.moonlight-embedded-launcher-1.1
 
 5. The next step is pairing with the Gamestream host.  Ensure that the host is on and connected to the local network. Then start the pairing process by selecting `Yes`. You will be prompted with an authentication code in the Kodi gui. Enter this code in the popup that appears on the Gamestream host.
 ![Pairing menu](readme_files/pair_code.png)
-![Gamestream host pop-up](readme_files/gamestream_prompt.png)  
-Note screenshot above is from old Nvidia Gamestream software. Sunshine has a similar pin entry capability in the web interface under the "Pin" tab.  
-Visit `Configure/Pair` in the Kodi Add-on GUI if you ever need to register a new Gamestream host. 
+![Gamestream host pop-up](readme_files/gamestream_prompt.png)
+Note screenshot above is from old Nvidia Gamestream software. Sunshine has a similar pin entry capability in the web interface under the "Pin" tab.
+Visit `Configure/Pair` in the Kodi Add-on GUI if you ever need to register a new Gamestream host.
 
 7. Launch moonlight-embedded from within Kodi and enjoy your game streaming experience. Select `Play Game` and follow the prompts to play any game registered with gamestream.  Select `Configure` to pair with a new host, update the Docker container or adjust settings (resolution, framerate, bitrate, custom IPs, custom moonlight flags etc).
 ```
 Kodi/Add-ons/Game add-ons/Moonlight Embedded Launcher
 ```
-![Launcher icon](readme_files/launcher_icon.png)  
+![Launcher icon](readme_files/launcher_icon.png)
 
 7. Kodi will automatically relaunch when the application you are streaming closes. For example: select the power icon in the Steam gui to end the streaming session.
 
