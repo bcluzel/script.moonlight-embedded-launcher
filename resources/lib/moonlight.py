@@ -125,13 +125,13 @@ def pair(hostip):
                         50,
                         f"Please enter authentication code {code} on Gamestream host",
                     )
-        if not pDialog.iscanceled() and proc.returncode == 0:
+        if proc and not pDialog.iscanceled() and proc.returncode == 0:
             pDialog.update(100, "Complete!")
             time.sleep(3)
         else:
             try:
                 proc.terminate()
-            except:
+            except Exception:
                 pass
         pDialog.close()
         if re.search(r"Failed to pair to server: Already paired", stdout):
@@ -153,7 +153,7 @@ def run_moonlight(mode, hostip, blockio=True):
     if not hostip and not host_check():
         xbmcgui.Dialog().ok(
             "Error",
-            "No Gamestream host auto-detected on local network. Please connect it, enable Gamestream and retry.",
+            "No Gamestream host auto-detected on local network. Check if the gamestream service is started and retry.",
         )
         return None
     cmd = (
